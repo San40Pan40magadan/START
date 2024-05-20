@@ -1,0 +1,83 @@
+version: '3'
+x-postgres-common:
+  &postgres-common
+  image: postgres:15
+  user: ${DB_USER}
+  restart: always
+  healthcheck:
+    test: 'pg_isready -U ${DB_USER} --dbname=${DB_DATABASE}'
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
+services:
+  db_image:
+    <<: *postgres-common
+    container_name: db_image
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    ports:
+      - ${DB_PORT}
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    command: |
+      postgres
+      -c wal_level=replica
+      -c hot_standby=on
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c hot_standby_feedback=on
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - .env
+    networks:
+      Bot-network:
+
+  db_repl_image:
+    <<: *postgres-common
+    container_name: db_repl_image
+    build:
+      context: ./db_repl
+      dockerfile: Dockerfile
+    ports:
+      - ${DB_REPL_PORT}
+    environment:
+      PGUSER: ${DB_REPL_USER}
+      PGPASSWORD: ${DB_REPL_PASSWORD}
+    command: |
+      bash -c "
+      until pg_basebackup --pgdata=/var/lib/postgresql/data -R --slot=replication_slot --host=${DB_HOST} --port=${DB_PORT}
+      do
+      echo 'Waiting for primary to connect...'
+      rm -rf /var/lib/postgresql/data/*
+      sleep 1s
+      done
+      echo 'Backup done, starting replica...'
+      chmod 0700 /var/lib/postgresql/data
+      postgres
+      "
+    depends_on:
+      - db_image
+    networks:
+      Bot-network:
+
+  bot_image:
+    container_name: bot_image
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    networks:
+      Bot-network:
+    depends_on:
+      - db_image
+      - db_repl_image
+    env_file:
+      - .env
+
+networks:
+  Bot-network:
