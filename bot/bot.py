@@ -338,8 +338,8 @@ def get_services(update: Update, context):
 def get_repl_logs(update: Update, context):
     update.message.reply_text(
         'Информация о запросе запуска, об остановке репликации, о готовности системы выполнить соединение')
-    command = "cat /var/log/postgresql/postgresql-15-main.log | head -n 5"
-    result = execute_ssh_command(RM_HOST, RM_PORT, RM_USER, RM_PASSWORD, command)
+    command = "grep repl /var/log/postgresql/postgresql.log | tail -n 10"
+    result = execute_ssh_command(DB_HOST, RM_PORT, DB_USER, DB_PASSWORD, command)
     update.message.reply_text(result)
 
 
