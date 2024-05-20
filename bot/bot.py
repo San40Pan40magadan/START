@@ -3,6 +3,7 @@ import re
 import paramiko
 import os
 import psycopg2
+import subprocess
 
 from psycopg2 import Error
 from dotenv import load_dotenv
@@ -338,10 +339,27 @@ def get_services(update: Update, context):
 def get_repl_logs(update: Update, context):
     update.message.reply_text(
         'Информация о запросе запуска, об остановке репликации, о готовности системы выполнить соединение')
-    command = "cat /var/log/postgresql/postgresql.log | grep repl | tail -n 10"
-    result = execute_ssh_command(DB_HOST, RM_PORT, DB_USER, DB_PASSWORD, command)
-    update.message.reply_text(result)
-
+    try:
+        # Выполнение команды для получения логов
+        result = subprocess.run(
+            ["bash", "-c", "cat /var/log/postgresql/postgresql.log | grep repl | tail -n 15"],
+            capture_output=True,
+            text=True,
+            check=True  # Проверка наличия ошибок выполнения
+        )
+        logs = result.stdout
+        if logs:
+            update.message.reply_text(f"Последние репликационные логи:\n{logs}")
+            return ConversationHandler.END  # Завершаем работу обработчика диалога
+        else:
+            update.message.reply_text("Репликационные логи не найдены.")
+            return ConversationHandler.END  # Завершаем работу обработчика диалога
+    except subprocess.CalledProcessError as e:
+        update.message.reply_text(f"Ошибка при выполнении команды: {e}")
+        return ConversationHandler.END  # Завершаем работу обработчика диалога
+    except Exception as e:
+        update.message.reply_text(f"Ошибка при получении логов: {str(e)}")
+        return ConversationHandler.END  # Завершаем работу обработчика диалога
 
 def get_emails(update: Update, context):
     update.message.reply_text('Email-адреса из базы данных')
