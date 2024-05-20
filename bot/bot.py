@@ -44,11 +44,11 @@ def start(update: Update, context):
 def helpCommand(update: Update, context):
     update.message.reply_text(
         '/help - вызвать все команды\n/find_email - поиск email-адресов в тексте\n/find_phone_number - поиск номеров телефона в тексте\n/verify_password - проверка сложности пароля\n'
-        '/get_release - О релизе\n/get_uname - Об архитектуры процессора, имени хоста системы и версии ядра. \n/get_uptime - О времени работы.\n'
-        '/get_df - Сбор информации о состоянии файловой системы. \n/get_free - Сбор информации о состоянии оперативной памяти. \n/get_mpstat - Сбор информации о производительности системы.\n'
-        '/get_w - Сбор информации о работающих в данной системе пользователях.\n/get_auths -  Последние 10 входов в систему. \n/get_critical - Последние 5 критических события.\n'
-        '/get_ps - Сбор информации о запущенных процессах. \n/get_ss - Сбор информации об используемых портах.\n/get_apt_list - Сбор информации об установленных пакетах. \n/get_services - Сбор информации о запущенных сервисах. \n'
-        '/get_repl_logs - Информация о запросе запуска, об остановке репликации, о готовности системы выполнить соединение. \n/get_emails - получить email-адреса из базы данных\n'
+        '/get_release - о релизе\n/get_uname - об архитектуры процессора, имени хоста системы и версии ядра. \n/get_uptime - о времени работы.\n'
+        '/get_df - сбор информации о состоянии файловой системы. \n/get_free - сбор информации о состоянии оперативной памяти. \n/get_mpstat - сбор информации о производительности системы.\n'
+        '/get_w - сбор информации о работающих в данной системе пользователях.\n/get_auths -  последние 10 входов в систему. \n/get_critical - последние 5 критических события.\n'
+        '/get_ps - сбор информации о запущенных процессах. \n/get_ss - сбор информации об используемых портах.\n/get_apt_list - сбор информации об установленных пакетах. \n/get_services - сбор информации о запущенных сервисах. \n'
+        '/get_repl_logs - информация о запросе запуска, об остановке репликации, о готовности системы выполнить соединение. \n/get_emails - получить email-адреса из базы данных\n'
         '/get_phone_numbers - получить номера телефонов из базы данных\n')
 
 
@@ -92,7 +92,7 @@ def find_Phone_Number(update: Update, context):
     PhoneNumberNew.pop()
 
     update.message.reply_text(PhoneNumberNew)  # Отправляем сообщение пользователю
-    update.message.reply_text('Записать найденные nелефонные номера в базу данных?\nДа, для записи. \nНет, для выхода.')
+    update.message.reply_text('Записать найденные телефонные номера в базу данных?\nДа, для записи. \nНет, для выхода.')
     return "get_Phone_Number"
 
 
@@ -122,7 +122,7 @@ def get_Phone_Number(update: Update, context):
                 logging.info("Команда успешно выполнена")
             except (Exception, Error) as error:
                 logging.error("Ошибка при работе с PostgreSQL: %s", error)
-                update.message.reply_text('Телефон(ы) не сохранены в базе данных\nМожете повторить или выбрать другую команду')
+                update.message.reply_text('Телефон(ы) не сохранен(ы) в базе данных\nМожете выбрать другую команду')
                 return ConversationHandler.END  # Завершаем работу обработчика диалога
             finally:
                 if connection is not None:
@@ -136,7 +136,7 @@ def get_Phone_Number(update: Update, context):
             update.message.reply_text('Телефон(ы) не будет(-ут) сохранены в базе данных')
             return ConversationHandler.END  # Завершаем работу обработчика диалога
         else:
-            update.message.reply_text(f"Пожалуйста, выберите, что хотите сделать с найденными телефонами, отправив Да или Нет")
+            update.message.reply_text(f"Выберите, что хотите сделать с найденными телефонами, отправив Да или Нет")
         return "get_Phone_Number"
 
 def find_Email(update: Update, context):
@@ -193,7 +193,7 @@ def get_email(update: Update, context):
                 logging.info("Команда успешно выполнена")
             except (Exception, Error) as error:
                 logging.error("Ошибка при работе с PostgreSQL: %s", error)
-                update.message.reply_text('Email-адрес(а) не сохранены в базе данных\nМожете повторить или выбрать другую команду')
+                update.message.reply_text('Email-адрес(а) не сохранен(ы) в базе данных\nМожете выбрать другую команду')
                 return ConversationHandler.END  # Завершаем работу обработчика диалога
             finally:
                 if connection is not None:
@@ -250,7 +250,7 @@ def get_uname(update: Update, context):
 
 
 def get_uptime(update: Update, context):
-    update.message.reply_text('Информация об времени работы')
+    update.message.reply_text('Информация о времени работы')
     command = "uptime"
     result = execute_ssh_command(RM_HOST, RM_PORT, RM_USER, RM_PASSWORD, command)
     update.message.reply_text(result)
@@ -298,7 +298,7 @@ def get_critical(update: Update, context):
 
 
 def get_ps(update: Update, context):
-    update.message.reply_text('Информация об запущенных процессах')
+    update.message.reply_text('Информация о запущенных процессах')
     command = "ps aux | head"
     result = execute_ssh_command(RM_HOST, RM_PORT, RM_USER, RM_PASSWORD, command)
     update.message.reply_text(result)
